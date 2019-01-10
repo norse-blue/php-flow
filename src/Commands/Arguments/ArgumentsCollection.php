@@ -14,6 +14,22 @@ use NorseBlue\Flow\Exceptions\UnsupportedArgumentTypeException;
 class ArgumentsCollection extends BaseCollection
 {
     /**
+     * Creates a new instance of the collection from a definition.
+     *
+     * @param array      $definition
+     * @param array|null $items
+     *
+     * @return \NorseBlue\Flow\Commands\Arguments\ArgumentsCollection
+     *
+     * @todo Try to move this to the BaseCollection class when PHP7.4 arrives with the covariant return types
+     * @see  https://wiki.php.net/rfc/covariant-returns-and-contravariant-parameters}
+     */
+    public static function create(array $definition, $items = null): ArgumentsCollection
+    {
+        return new static($definition, $items);
+    }
+
+    /**
      * {@inheritdoc}
      */
     protected function compile(array $definition): array

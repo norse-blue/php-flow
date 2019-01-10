@@ -18,7 +18,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function canCompileEmptyItemsDefinition(): void
     {
-        $collection = new ArgumentsCollection([]);
+        $collection = ArgumentsCollection::create([]);
 
         $this->assertEquals([], $collection->getDefinition());
         $this->assertEquals([
@@ -30,7 +30,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function canCompileItemsDefinitionWithOneElement(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'path' => ArgumentType::STRING,
         ]);
 
@@ -55,7 +55,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function canCompileItemsDefinitionWithMultipleElements(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'path' => ArgumentType::STRING,
             'user' => ArgumentType::STRING,
             'server' => ArgumentType::STRING,
@@ -93,7 +93,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function canCompileItemsDefinitionWithCustomValidation(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'path' => [
                 'type' => ArgumentType::STRING,
                 'validation' => function ($value, $type) {
@@ -121,7 +121,7 @@ class ArgumentsCollectionTest extends TestCase
     public function missingArgumentTypeInDefinitionThrowsException(): void
     {
         try {
-            new ArgumentsCollection([
+            ArgumentsCollection::create([
                 'argument',
             ]);
         } catch (\Exception $e) {
@@ -144,7 +144,7 @@ class ArgumentsCollectionTest extends TestCase
     public function unsupportedArgumentTypeInDefinitionThrowsException(): void
     {
         try {
-            new ArgumentsCollection([
+            ArgumentsCollection::create([
                 'argument' => 'unsupported_type',
             ]);
         } catch (\Exception $e) {
@@ -166,7 +166,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function itemsDefinitionDefaultValidationValidatesTypeCorrectly(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'string-argument' => ArgumentType::STRING,
         ]);
 
@@ -179,7 +179,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function setCanSetArgumentValue(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -193,7 +193,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getCanGetArgumentValueByKey(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ], [
             'command' => 'argument-value',
@@ -205,7 +205,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getCanGetArgumentValueByIndex(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ], [
             'command' => 'argument-value',
@@ -217,7 +217,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getThrowsExceptionWhenIndexDoesNotExist(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ], [
             'command' => 'argument-value',
@@ -237,7 +237,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getReturnsDefaultValueWhenArgumentNotSet(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -248,7 +248,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function issetReturnsArgumentStateCorrectly(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -262,7 +262,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function unsetRemovesArgumentStateCorrectly(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ], [
             'command' => 'argument-value',
@@ -278,7 +278,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getIndexReturnsCompiledArgumentIndex(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -288,7 +288,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getIndexThrowsExceptionWhenArgumentIsInvalid(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -306,7 +306,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getTypeReturnsCompiledArgumentType(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -316,7 +316,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getTypeThrowsExceptionWhenArgumentIsInvalid(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => ArgumentType::STRING,
         ]);
 
@@ -337,7 +337,7 @@ class ArgumentsCollectionTest extends TestCase
         $validation = function ($value) {
             return \is_bool($value);
         };
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => [
                 'type' => ArgumentType::STRING,
                 'validation' => $validation,
@@ -350,7 +350,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function getValidationThrowsExceptionWhenArgumentIsInvalid(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'command' => [
                 'type' => ArgumentType::STRING,
                 'validation' => function ($value) {
@@ -373,7 +373,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function emptyCollectionIsConvertedToStringCorrectly(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'source' => ArgumentType::STRING,
             'destination' => ArgumentType::STRING,
         ]);
@@ -384,7 +384,7 @@ class ArgumentsCollectionTest extends TestCase
     /** @test */
     public function collectionIsConvertedToStringCorrectly(): void
     {
-        $collection = new ArgumentsCollection([
+        $collection = ArgumentsCollection::create([
             'source' => ArgumentType::STRING,
             'destination' => ArgumentType::STRING,
         ], [

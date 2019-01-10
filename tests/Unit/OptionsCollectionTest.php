@@ -17,7 +17,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileEmptyOptionsDefinition(): void
     {
-        $collection = new OptionsCollection([]);
+        $collection = OptionsCollection::create([]);
 
         $this->assertEquals([], $collection->getDefinition());
         $this->assertEquals([
@@ -29,7 +29,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileOptionsDefinitionWithOneSingleElement(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             '-f' => OptionType::BOOL,
         ]);
 
@@ -56,7 +56,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileOptionsDefinitionWithOneSingleElementWithAliasInDifferentCase(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             '-f|-F' => OptionType::BOOL,
         ]);
 
@@ -91,7 +91,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileOptionsDefinitionWithOneDualElement(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             '-f|--flag' => OptionType::BOOL,
         ]);
 
@@ -126,7 +126,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileOptionsDefinitionWithMultipleElements(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             '-f' => OptionType::BOOL,
             '--flag' => OptionType::BOOL,
             '-d|--dual-flag' => OptionType::BOOL,
@@ -213,7 +213,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function canCompileOptionsDefinitionWithCustomValidation(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             '-i' => [
                 'type' => OptionType::STRING,
                 'validation' => function ($value, $type) {
@@ -249,7 +249,7 @@ class OptionsCollectionTest extends TestCase
     public function unsupportedOptionTypeInDefinitionThrowsException(): void
     {
         try {
-            new OptionsCollection([
+            OptionsCollection::create([
                 'option' => 'unsupported_type',
             ]);
         } catch (\Exception $e) {
@@ -264,7 +264,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function optionsDefinitionDefaultValidationValidatesTypeCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
             'string-option' => OptionType::STRING,
         ]);
@@ -280,7 +280,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function setCanSetOptionValue(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ]);
 
@@ -297,7 +297,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getCanGetOptionValueByKey(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ], [
             'bool-option' => true,
@@ -309,7 +309,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getReturnsDefaultValueWhenOptionNotSet(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ]);
 
@@ -320,7 +320,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function issetReturnsOptionStateCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ]);
 
@@ -334,7 +334,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function unsetRemovesArgumentStateCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::STRING,
         ], [
             'bool-option' => false,
@@ -350,7 +350,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getAliasesReturnsCompiledOptionAliases(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option|bool-alias' => OptionType::BOOL,
         ]);
 
@@ -361,7 +361,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getAliasesThrowsExceptionWhenOptionIsInvalid(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option|bool-alias' => OptionType::BOOL,
         ]);
 
@@ -379,7 +379,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getHashIsReturnedForOption(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'b|bool-option' => OptionType::BOOL,
         ]);
 
@@ -389,7 +389,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getHashThrowsExceptionWhenOptionIsInvalid(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'b|bool-option' => OptionType::BOOL,
         ]);
 
@@ -407,7 +407,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getTypeReturnsCompiledOptionType(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ]);
 
@@ -417,7 +417,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function getTypeThrowsExceptionWhenOptionIsInvalid(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
         ]);
 
@@ -435,7 +435,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function emptyCollectionIsConvertedToStringCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
             'string-option' => OptionType::STRING,
         ]);
@@ -446,7 +446,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function collectionIsConvertedToStringCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
             'string-option' => OptionType::STRING,
         ], [
@@ -463,7 +463,7 @@ class OptionsCollectionTest extends TestCase
     /** @test */
     public function collectionWithBoolOptionSetToFalseIsConvertedToStringCorrectly(): void
     {
-        $collection = new OptionsCollection([
+        $collection = OptionsCollection::create([
             'bool-option' => OptionType::BOOL,
             'string-option' => OptionType::STRING,
         ], [
