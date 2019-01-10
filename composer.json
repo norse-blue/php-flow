@@ -1,0 +1,63 @@
+{
+    "name": "norse-blue/flow",
+    "type": "library",
+    "description": "PHP fluid command builder.",
+    "keywords": [
+        "NorseBlue",
+        "Flow",
+        "fluid",
+        "command",
+        "builder"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Axel Pardemann",
+            "email": "axel.pardemann@norse.blue",
+            "homepage": "https://axel.pardemann.me",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^7.3",
+        "ext-json": "*",
+        "myclabs/php-enum": "^1.6"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^0.10",
+        "phpunit/phpunit": "^7.5",
+        "squizlabs/php_codesniffer": "^3.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "NorseBlue\\Flow\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "NorseBlue\\Flow\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "analyse": [
+            "vendor/bin/phpstan analyse --ansi src tests"
+        ],
+        "style-check": [
+            "vendor/bin/phpcs -p --standard=PSR2 --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 src tests"
+        ],
+        "style-fix": [
+            "vendor/bin/phpcbf -p --standard=PSR2 --runtime-set ignore_errors_on_exit 1 --runtime-set ignore_warnings_on_exit 1 src tests"
+        ],
+        "test": [
+            "vendor/bin/phpunit --colors=always"
+        ],
+        "test-coverage": [
+            "vendor/bin/phpunit --colors=always --coverage-clover=./build/coverage.xml --coverage-html=./build/coverage"
+        ]
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
