@@ -399,6 +399,23 @@ class ArgumentsCollectionTest extends TestCase
     }
 
     /** @test */
+    public function collectionIsConvertedToStringCorrectlyWithEscapedValues(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'source' => ArgumentType::STRING,
+            'destination' => ArgumentType::STRING,
+        ], [
+            'source' => '/home/user/My Downloads/my-download.tar.gz',
+            'destination' => '/home/user/My Backups/my-download.tar.gz',
+        ]);
+
+        $this->assertEquals(
+            '"/home/user/My Downloads/my-download.tar.gz" "/home/user/My Backups/my-download.tar.gz"',
+            (string)$collection
+        );
+    }
+
+    /** @test */
     public function collectionIsConvertedToArrayCorrectly(): void
     {
         $collection = ArgumentsCollection::create([

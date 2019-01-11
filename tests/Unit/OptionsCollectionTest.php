@@ -461,6 +461,23 @@ class OptionsCollectionTest extends TestCase
     }
 
     /** @test */
+    public function collectionIsConvertedToStringCorrectlyWithEscapedValues(): void
+    {
+        $collection = OptionsCollection::create([
+            'bool-option' => OptionType::BOOL,
+            'string-option' => OptionType::STRING,
+        ], [
+            'bool-option' => true,
+            'string-option' => 'string value',
+        ]);
+
+        $this->assertEquals(
+            'bool-option string-option "string value"',
+            (string)$collection
+        );
+    }
+
+    /** @test */
     public function collectionWithBoolOptionSetToFalseIsConvertedToStringCorrectly(): void
     {
         $collection = OptionsCollection::create([
