@@ -131,7 +131,7 @@ class OptionsCollection extends BaseCollection
                     ' %s%s%s',
                     $option['key'],
                     $this->control['named'][$option['key']]['glue'] ?? ' ',
-                    $option['value']
+                    $this->escapeValue($option['value'])
                 );
             }
         }

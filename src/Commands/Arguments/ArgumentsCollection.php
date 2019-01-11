@@ -79,7 +79,7 @@ class ArgumentsCollection extends BaseCollection
         $str = '';
 
         foreach ($this->control['indexed'] as $index => $key) {
-            $str .= sprintf(' %s', $this->get($key));
+            $str .= sprintf(' %s', $this->escapeValue($this->get($key)));
         }
 
         return ltrim($str);

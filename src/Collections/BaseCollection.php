@@ -169,4 +169,21 @@ abstract class BaseCollection implements CompilableCollection
 
         return $key;
     }
+
+    /**
+     * Escapes the item's value when needed.
+     *
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    public function escapeValue($value)
+    {
+        if ($value === null) {
+            return $value;
+        }
+
+        $value = trim($value);
+        return strpos($value, ' ') === false ? $value : sprintf('"%s"', $value);
+    }
 }
