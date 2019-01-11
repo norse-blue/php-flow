@@ -102,6 +102,11 @@ abstract class BaseCollection implements CompilableCollection
     abstract public function __toString(): string;
 
     /**
+     * {@inheritdoc}
+     */
+    abstract public function toArray(): array;
+
+    /**
      * @param array $items
      *
      * @return void

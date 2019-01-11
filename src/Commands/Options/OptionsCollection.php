@@ -142,6 +142,19 @@ class OptionsCollection extends BaseCollection
     /**
      * {@inheritdoc}
      */
+    public function toArray(): array
+    {
+        $items = [];
+        foreach ($this->definition as $key => $definition) {
+            $items[$key] = $this->get($key);
+        }
+
+        return $items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function parseKey($key): string
     {
         return (string)$key;

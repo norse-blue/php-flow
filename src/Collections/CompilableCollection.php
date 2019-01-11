@@ -76,9 +76,16 @@ interface CompilableCollection
     public function getControl(): array;
 
     /**
-     * Get the collection's actual items.
+     * Get the collection's raw internal items array.
      *
      * @return array
      */
     public function getItems(): array;
+
+    /**
+     * Gets the collection's processed items array.
+     *
+     * @return array
+     */
+    public function toArray(): array;
 }

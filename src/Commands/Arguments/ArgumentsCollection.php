@@ -88,6 +88,19 @@ class ArgumentsCollection extends BaseCollection
     /**
      * {@inheritdoc}
      */
+    public function toArray(): array
+    {
+        $items = [];
+        foreach ($this->control['indexed'] as $index => $key) {
+            $items[$key] = $this->get($key);
+        }
+
+        return $items;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     protected function parseKey($key): string
     {
         if (\is_int($key)) {
