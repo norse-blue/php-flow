@@ -104,7 +104,7 @@ abstract class BaseCollection implements CompilableCollection
     /**
      * {@inheritdoc}
      */
-    abstract public function toArray(): array;
+    abstract public function toArray(bool $filterUnset = false): array;
 
     /**
      * @param array $items

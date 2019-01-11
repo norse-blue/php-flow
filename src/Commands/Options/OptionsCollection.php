@@ -142,10 +142,14 @@ class OptionsCollection extends BaseCollection
     /**
      * {@inheritdoc}
      */
-    public function toArray(): array
+    public function toArray(bool $filterUnset = false): array
     {
         $items = [];
         foreach ($this->definition as $key => $definition) {
+            if ($filterUnset && !$this->isset($key)) {
+                continue;
+            }
+
             $items[$key] = $this->get($key);
         }
 

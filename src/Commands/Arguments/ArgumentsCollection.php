@@ -88,10 +88,14 @@ class ArgumentsCollection extends BaseCollection
     /**
      * {@inheritdoc}
      */
-    public function toArray(): array
+    public function toArray(bool $filterUnset = false): array
     {
         $items = [];
         foreach ($this->control['indexed'] as $index => $key) {
+            if ($filterUnset && !$this->isset($key)) {
+                continue;
+            }
+
             $items[$key] = $this->get($key);
         }
 

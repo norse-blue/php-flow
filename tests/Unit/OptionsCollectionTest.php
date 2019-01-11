@@ -520,4 +520,29 @@ class OptionsCollectionTest extends TestCase
             $collection->toArray()
         );
     }
+
+    /** @test */
+    public function collectionIsConvertedToArrayWithNotSetValuesFilteredOutCorrectly(): void
+    {
+        $collection = OptionsCollection::create([
+            'bool-true-option' => OptionType::BOOL,
+            'bool-false-option' => OptionType::BOOL,
+            'bool-null-option' => OptionType::BOOL,
+            'string-option' => OptionType::STRING,
+            'string-null-option' => OptionType::STRING,
+        ], [
+            'bool-true-option' => true,
+            'bool-false-option' => false,
+            'string-option' => 'string-value',
+        ]);
+
+        $this->assertEquals(
+            [
+                'bool-true-option' => true,
+                'bool-false-option' => false,
+                'string-option' => 'string-value',
+            ],
+            $collection->toArray(true)
+        );
+    }
 }
