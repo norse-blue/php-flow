@@ -85,7 +85,9 @@ interface CompilableCollection
     /**
      * Gets the collection's processed items array.
      *
+     * @param bool $filterUnset
+     *
      * @return array
      */
-    public function toArray(): array;
+    public function toArray(bool $filterUnset = false): array;
 }

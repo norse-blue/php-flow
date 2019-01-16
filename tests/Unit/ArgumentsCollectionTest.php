@@ -434,4 +434,22 @@ class ArgumentsCollectionTest extends TestCase
             $collection->toArray()
         );
     }
+
+    /** @test */
+    public function collectionIsConvertedToArrayWithNotSetValuesFilteredOutCorrectly(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'source' => ArgumentType::STRING,
+            'destination' => ArgumentType::STRING,
+        ], [
+            'source' => '/home/user/Downloads/my-download.tar.gz',
+        ]);
+
+        $this->assertEquals(
+            [
+                'source' => '/home/user/Downloads/my-download.tar.gz',
+            ],
+            $collection->toArray(true)
+        );
+    }
 }
