@@ -53,8 +53,9 @@ class FluidBaseCommandTest extends TestCase
     {
         $cmd = new IdCommand();
 
-        $cmd->user('axel');
+        $result = $cmd->user('axel');
 
+        $this->assertSame($cmd, $result);
         $this->assertTrue(isset($cmd->user));
         $this->assertEquals('axel', $cmd->user);
     }
@@ -81,10 +82,11 @@ class FluidBaseCommandTest extends TestCase
     {
         $cmd = new IdCommand();
 
-        $cmd->_a(true);
-        $cmd->_n(false);
-        $cmd->__version(true);
+        $result = $cmd->_a(true)
+            ->_n(false)
+            ->__version(true);
 
+        $this->assertSame($cmd, $result);
         $this->assertTrue(isset($cmd->_a));
         $this->assertTrue(isset($cmd->_n));
         $this->assertTrue(isset($cmd->__version));
