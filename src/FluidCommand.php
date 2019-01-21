@@ -15,10 +15,10 @@ interface FluidCommand
     /**
      * Initializes the command compiling the arguments and options collections.
      *
-     * @param string|array $arguments_definition The arguments definition property name or the actual definition array
-     * @param string|array $options_definition   The options definition property name or the actual definition array
+     * @param array $arguments_definition The arguments definition array
+     * @param array $options_definition   The options definition array
      */
-    public function init($arguments_definition, $options_definition): void;
+    public function init(array $arguments_definition, array $options_definition): void;
 
     /**
      * Gets the command name.

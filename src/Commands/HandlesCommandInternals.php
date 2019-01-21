@@ -24,24 +24,8 @@ trait HandlesCommandInternals
     /**
      * {@inheritdoc}
      */
-    public function init($arguments_definition, $options_definition): void
+    public function init(array $arguments_definition, array $options_definition): void
     {
-        if (is_string($arguments_definition)) {
-            if (!property_exists($this, $arguments_definition) || !is_array($this->{$arguments_definition})) {
-                $arguments_definition = [];
-            }
-
-            $arguments_definition = $this->{$arguments_definition};
-        }
-
-        if (is_string($options_definition)) {
-            if (!property_exists($this, $options_definition) || !is_array($this->{$options_definition})) {
-                $options_definition = [];
-            }
-
-            $options_definition = $this->{$options_definition};
-        }
-
         $this->arguments = ArgumentsCollection::create($arguments_definition);
         $this->options = OptionsCollection::create($options_definition);
     }
