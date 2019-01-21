@@ -135,4 +135,26 @@ trait HandlesCommandInternals
 
         return $this;
     }
+
+    /**
+     * Gets the command as a string.
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        $str = $this->name;
+
+        $options = (string)$this->options;
+        if (!empty($options)) {
+            $str .= sprintf(' %s', $options);
+        }
+
+        $arguments = (string)$this->arguments;
+        if (!empty($arguments)) {
+            $str .= sprintf(' %s', $arguments);
+        }
+
+        return $str;
+    }
 }
