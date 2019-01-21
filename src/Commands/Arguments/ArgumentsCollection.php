@@ -3,8 +3,9 @@
 namespace NorseBlue\Flow\Commands\Arguments;
 
 use NorseBlue\Flow\Collections\BaseCollection;
-use NorseBlue\Flow\FluidCommand;
+use NorseBlue\Flow\Exceptions\InvalidArgumentIdentifierException;
 use NorseBlue\Flow\Exceptions\UnsupportedArgumentTypeException;
+use NorseBlue\Flow\FluidCommand;
 
 /**
  * Class ArgumentsCollection
@@ -37,6 +38,12 @@ class ArgumentsCollection extends BaseCollection
         $compiled = ['indexed' => [], 'named' => []];
 
         foreach ($definition as $key => $argument) {
+            if (!$this->validateIdentifier($key)) {
+                throw new InvalidArgumentIdentifierException(
+                    sprintf('The given argument identifier "%s" is not valid.', $key)
+                );
+            }
+
             $type = \is_array($argument) ? $argument['type'] : $argument;
 
             if (!ArgumentType::isValid($type)) {
@@ -116,6 +123,18 @@ class ArgumentsCollection extends BaseCollection
         }
 
         return $key;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateIdentifier($key): bool
+    {
+        if (!parent::validateIdentifier($key)) {
+            return false;
+        }
+
+        return (bool)preg_match('/^[a-zA-Z](?:[a-zA-Z0-9_\-]+)?(?<!\-)$/', (string)$key);
     }
 
     /**

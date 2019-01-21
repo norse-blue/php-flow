@@ -3,7 +3,7 @@
 namespace NorseBlue\Flow\Exceptions;
 
 /**
- * Class UnsupportedArgumentTypeException
+ * Class UnsupportedOptionTypeException
  *
  * @package NorseBlue\Flow\Exceptions
  */

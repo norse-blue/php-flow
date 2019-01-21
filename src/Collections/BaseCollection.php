@@ -186,4 +186,16 @@ abstract class BaseCollection implements CompilableCollection
         $value = trim($value);
         return strpos($value, ' ') === false ? $value : sprintf('"%s"', $value);
     }
+
+    /**
+     * Validates the item's identifier key.
+     *
+     * @param int|string $key
+     *
+     * @return bool
+     */
+    public function validateIdentifier($key): bool
+    {
+        return !(!is_int($key) && !is_string($key));
+    }
 }

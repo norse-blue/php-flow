@@ -3,6 +3,7 @@
 namespace NorseBlue\Flow\Commands\Options;
 
 use NorseBlue\Flow\Collections\BaseCollection;
+use NorseBlue\Flow\Exceptions\InvalidOptionIdentifierException;
 use NorseBlue\Flow\Exceptions\UnsupportedOptionTypeException;
 
 /**
@@ -36,6 +37,12 @@ class OptionsCollection extends BaseCollection
         $compiled = ['hashed' => [], 'named' => []];
 
         foreach ($definition as $key => $option) {
+            if (!$this->validateIdentifier($key)) {
+                throw new InvalidOptionIdentifierException(
+                    sprintf('The given option identifier "%s" is not valid.', $key)
+                );
+            }
+
             $type = \is_array($option) ? $option['type'] : $option;
             if (!OptionType::isValid($type)) {
                 throw new UnsupportedOptionTypeException(
@@ -162,6 +169,18 @@ class OptionsCollection extends BaseCollection
     protected function parseKey($key): string
     {
         return (string)$key;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function validateIdentifier($key): bool
+    {
+        if (!parent::validateIdentifier($key)) {
+            return false;
+        }
+
+        return (bool)preg_match('/^\-{1,2}[a-zA-Z](?:[a-zA-Z0-9_\-]|\|\-{1,2}[a-zA-Z])*(?<!\-)$/', (string)$key);
     }
 
     /**
