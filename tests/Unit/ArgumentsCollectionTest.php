@@ -2,6 +2,7 @@
 
 namespace NorseBlue\Flow\Tests\Unit;
 
+use NorseBlue\Flow\Exceptions\InvalidArgumentIdentifierException;
 use NorseBlue\Flow\Commands\Arguments\ArgumentsCollection;
 use NorseBlue\Flow\Commands\Arguments\ArgumentType;
 use NorseBlue\Flow\FluidCommand;
@@ -125,15 +126,8 @@ class ArgumentsCollectionTest extends TestCase
                 'argument',
             ]);
         } catch (\Exception $e) {
-            $this->assertInstanceOf(UnsupportedArgumentTypeException::class, $e);
-            $this->assertEquals(
-                sprintf(
-                    'The type (argument) for the given argument \'argument\' is not one of the'
-                    . ' supported types or it does not implement interface \'%s\'.',
-                    FluidCommand::class
-                ),
-                $e->getMessage()
-            );
+            $this->assertInstanceOf(InvalidArgumentIdentifierException::class, $e);
+            $this->assertEquals('The given argument identifier "0" is not valid.', $e->getMessage());
             return;
         }
 
@@ -451,5 +445,59 @@ class ArgumentsCollectionTest extends TestCase
             ],
             $collection->toArray(true)
         );
+    }
+
+    /** @test */
+    public function validatesInvalidIdentifierTypeCorrectly(): void
+    {
+        $collection = ArgumentsCollection::create([]);
+
+        $this->assertFalse($collection->validateIdentifier(new \stdClass()));
+    }
+
+    /** @test */
+    public function validIdentifiersAreCorrectlyValidated(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'validIdentifier' => ArgumentType::STRING,
+            'valid_identifier' => ArgumentType::STRING,
+            'valid-identifier' => ArgumentType::STRING,
+        ]);
+
+        $this->assertEquals([
+            'validIdentifier' => ArgumentType::STRING,
+            'valid_identifier' => ArgumentType::STRING,
+            'valid-identifier' => ArgumentType::STRING,
+        ], $collection->getDefinition());
+    }
+
+    /** @test */
+    public function invalidIdentifierBeginningWithNumberIsCorrectlyValidated(): void
+    {
+        try {
+            ArgumentsCollection::create([
+                '0_invalidIdentifier' => ArgumentType::STRING,
+            ]);
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(InvalidArgumentIdentifierException::class, $e);
+            return;
+        }
+
+        $this->fail('The Exception was not thrown.');
+    }
+
+    /** @test */
+    public function invalidIdentifierWithSpaceIsCorrectlyValidated(): void
+    {
+        try {
+            ArgumentsCollection::create([
+                'invalid identifier' => ArgumentType::STRING,
+            ]);
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(InvalidArgumentIdentifierException::class, $e);
+            return;
+        }
+
+        $this->fail('The Exception was not thrown.');
     }
 }
