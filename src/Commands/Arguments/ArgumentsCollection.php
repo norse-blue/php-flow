@@ -44,38 +44,51 @@ class ArgumentsCollection extends BaseCollection
                 );
             }
 
-            $type = \is_array($argument) ? $argument['type'] : $argument;
-
-            if (!ArgumentType::isValid($type)) {
-                throw new UnsupportedArgumentTypeException(
-                    sprintf(
-                        'The type (%s) for the given argument \'%s\' is not one of the supported types'
-                        . ' or it does not implement interface \'%s\'.',
-                        $type,
-                        \is_string($key) ? $key : $type,
-                        FluidCommand::class
-                    )
-                );
-            }
-
-            $validation = $argument['validation'] ?? function ($value, $type): bool {
-                $callback = sprintf('is_%s', $type);
-                if (!is_callable($callback)) {
-                    throw new \RuntimeException(sprintf('Invalid callback \'%s\'.', $callback)); // @codeCoverageIgnore
-                }
-
-                return $callback($value);
-            };
-
             $compiled['indexed'][] = $key;
-            $compiled['named'][$key] = [
-                'index' => count($compiled['indexed']) - 1,
-                'type' => new ArgumentType($type),
-                'validation' => $validation,
-            ];
+            $compiled['named'][$key] = \array_merge([
+                    'index' => count($compiled['indexed']) - 1,
+                ], $this->compileSpec($argument));
         }
 
         return $compiled;
+    }
+
+    /**
+     * Compiles the argument spec.
+     *
+     * @param string|array $argument
+     *
+     * @return array
+     */
+    protected function compileSpec($argument): array
+    {
+        if (\is_string($argument)) {
+            return [
+                'type' => new ArgumentType($argument),
+                'validation' => function ($value, $type): bool {
+                    $callback = sprintf('is_%s', $type);
+                    if (!is_callable($callback)) {
+                        throw new \RuntimeException(sprintf('Invalid callback \'%s\'.', $callback)); // @codeCoverageIgnore
+                    }
+
+                    return $callback($value);
+                },
+            ];
+        }
+
+        if (!\is_array($argument)) {
+            throw new \UnexpectedValueException(sprintf(
+                'The argument spec must be a string or an array, %s given',
+                gettype($argument)
+            ));
+        }
+
+        $spec = [
+            'type' => new ArgumentType($argument['type']),
+            'validation' => $argument['validation'],
+        ];
+
+        return $spec;
     }
 
     /**
