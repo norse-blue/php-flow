@@ -9,11 +9,25 @@
 
 ## About
 
-Flow allows to create command classes that have a fluid interface to set arguments an options, e.g. `$id_cmd->user('axel')->_g(true);` to get the command as an executable string: `id -g axel`.
+Flow allows to create command classes that have a fluid interface to set its arguments and options values and get the executable string at the end. Example:
+
+```
+$cmd = new IdCommand();
+$cmd->user('axel')->_g(true);
+var_dump((string)$cmd);
+
+// Output:
+// string(10) "id -g axel"
+```
 
 ## Installation
 
-> **Requires [PHP 7.3+](https://php.net/releases/)**
+### Requirements
+
+This package requires the following to work correctly:
+
+> - [PHP 7.3+](https://php.net/releases/)
+> - [PHP JSON extension](https://php.net/manual/en/book.json.php)
 
 Require Flow using [Composer](https://getcomposer.org):
 
@@ -96,7 +110,7 @@ This is the commands name. This will be prepended as-is to the resulting string.
 
 ### Arguments definition
 
-This is the definition array for the command arguments. The item's key is how the argument is identified and used for the command calls, e.g. `'user'`: `$cmd->user('valiue');`.
+This is the definition array for the command arguments. The item's key is how the argument is identified and used for the command calls, e.g. a `'user'` entry creates a `user` method that can be called like `$cmd->user('value')`.
 
 #### Array structure
 
@@ -123,7 +137,12 @@ $argument_spec = [
 
 ### Options definition
 
-This is the definition array for the command options. The item's key is how the option is identified and used for the command calls, e.g. `'-g'`: `$cmd->_f(true);` (_note that for calls the underscore is used instead of the dash, but the definition requires the dash_).
+This is the definition array for the command options. The item's key is how the option is identified and used for the command calls, e.g. a `'-g'` entry creates a `_g` method that can be called like `$cmd->_g(true)`.
+
+**Notes:**
+
+> - The dashes in key names are replaced with underscore when defining the method names. The definition still requires the use of dashes for the keys (as you would for the commands in a terminal).
+> - [PHP function names are case-insensitive](https://php.net/manual/en/functions.user-defined.php), but this package makes the command method names case-sensitive, so `$cmd->_g(true)` and `$cmd->_G(true)` may or may not be equivalent (depending on the aliases in the definition).
 
 #### Array structure
 
@@ -155,6 +174,7 @@ $option_spec = [
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security
+
 If you discover any security-related issues, please email [security@norse.blue](axel.pardemann@norse.blue) instead of using the issue tracker.
 
 ## License
