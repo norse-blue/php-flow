@@ -5,8 +5,6 @@ namespace NorseBlue\Flow\Tests\Unit;
 use NorseBlue\Flow\Exceptions\InvalidArgumentIdentifierException;
 use NorseBlue\Flow\Commands\Arguments\ArgumentsCollection;
 use NorseBlue\Flow\Commands\Arguments\ArgumentType;
-use NorseBlue\Flow\FluidCommand;
-use NorseBlue\Flow\Exceptions\UnsupportedArgumentTypeException;
 use NorseBlue\Flow\Tests\TestCase;
 
 /**
@@ -142,12 +140,11 @@ class ArgumentsCollectionTest extends TestCase
                 'argument' => 'unsupported_type',
             ]);
         } catch (\Exception $e) {
-            $this->assertInstanceOf(UnsupportedArgumentTypeException::class, $e);
+            $this->assertInstanceOf(\UnexpectedValueException::class, $e);
             $this->assertEquals(
                 sprintf(
-                    'The type (unsupported_type) for the given argument \'argument\' is not one of the'
-                    . ' supported types or it does not implement interface \'%s\'.',
-                    FluidCommand::class
+                    'Value \'unsupported_type\' is not part of the enum %s',
+                    ArgumentType::class
                 ),
                 $e->getMessage()
             );

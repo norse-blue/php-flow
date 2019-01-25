@@ -4,7 +4,6 @@ namespace NorseBlue\Flow\Commands\Options;
 
 use NorseBlue\Flow\Collections\BaseCollection;
 use NorseBlue\Flow\Exceptions\InvalidOptionIdentifierException;
-use NorseBlue\Flow\Exceptions\UnsupportedOptionTypeException;
 
 /**
  * Class OptionsCollection
@@ -43,41 +42,97 @@ class OptionsCollection extends BaseCollection
                 );
             }
 
-            $type = \is_array($option) ? $option['type'] : $option;
-            if (!OptionType::isValid($type)) {
-                throw new UnsupportedOptionTypeException(
-                    sprintf(
-                        'The type for the option \'%s\' is not supported.',
-                        \is_string($key) ? $key : $type
-                    )
-                );
-            }
-
-            $aliases = array_unique(explode('|', $key), SORT_REGULAR);
-            if (($json = json_encode($aliases)) === false) {
-                throw new \RuntimeException('An unknown error occurred while trying to generate the aliases hash.'); // @codeCoverageIgnore
-            }
-            $hash = sha1((string)$json);
-
-            $compiled['hashed'][$hash] = $aliases;
-            foreach ($aliases as $alias) {
-                $compiled['named'][$alias] = [
-                    'aliases' => array_values(array_diff($aliases, [$alias])),
-                    'glue' => $option['glue'] ?? ' ',
-                    'hash' => $hash,
-                    'type' => new OptionType($type),
-                    'validation' => $option['validation'] ?? function ($value, $type): bool {
-                        $callback = sprintf('is_%s', $type);
-                        if (!is_callable($callback)) {
-                            throw new \RuntimeException(sprintf('Invalid callback \'%s\'.', $callback)); // @codeCoverageIgnore
-                        }
-                        return $callback($value);
-                    },
-                ];
-            }
+            $hash = sha1($key);
+            $compiled['hashed'][$hash] = $this->compileSpec($key, $option);
+            $compiled['named'] += $this->compileNamedOptions($hash, $compiled['hashed'][$hash]['aliases']);
         }
 
         return $compiled;
+    }
+
+    /**
+     * Compiles the option spec.
+     *
+     * @param string       $key
+     * @param string|array $option
+     *
+     * @return array
+     */
+    protected function compileSpec(string $key, $option): array
+    {
+        $aliases = array_unique(explode('|', $key), SORT_REGULAR);
+
+        if (\is_string($option)) {
+            return [
+                'aliases' => $aliases,
+                'glue' => ' ',
+                'type' => new OptionType($option),
+                'validation' => function ($value, $type): bool {
+                    $callback = sprintf('is_%s', $type);
+                    if (!is_callable($callback)) {
+                        // @codeCoverageIgnoreStart
+                        throw new \RuntimeException(
+                            sprintf('Invalid callback \'%s\'.', $callback)
+                        );
+                        // @codeCoverageIgnoreEnd
+                    }
+
+                    return $callback($value);
+                },
+            ];
+        }
+
+        if (!\is_array($option)) {
+            throw new \UnexpectedValueException(sprintf(
+                'The option spec must be a string or an array, %s given',
+                gettype($option)
+            ));
+        }
+
+        return [
+            'aliases' => $aliases,
+            'glue' => $option['glue'] ?? ' ',
+            'type' => new OptionType($option['type']),
+            'validation' => $this->ensureValidationClosure($option['validation']),
+        ];
+    }
+
+    /**
+     * Ensures that the validation is a closure or null.
+     *
+     * @param \Closure|callable|null $validation
+     *
+     * @return \Closure|null
+     */
+    protected function ensureValidationClosure($validation): ?callable
+    {
+        if ($validation instanceof \Closure) {
+            return $validation;
+        }
+
+        if (is_callable($validation)) {
+            return \Closure::fromCallable($validation);
+        }
+
+        return null;
+    }
+
+    /**
+     * Compiles the named options from the spec.
+     *
+     * @param string $hash
+     * @param array  $aliases
+     *
+     * @return array
+     */
+    protected function compileNamedOptions(string $hash, array $aliases): array
+    {
+        $named = [];
+        foreach ($aliases as $alias) {
+            $named[$alias] = $hash;
+        }
+
+        return $named;
     }
 
     /**
@@ -193,9 +248,9 @@ class OptionsCollection extends BaseCollection
      */
     public function getAliases(string $key, bool $include_key = false): array
     {
-        $key = $this->ensureValidKey($key);
+        $aliases = $this->control['hashed'][$this->getHash($key)]['aliases'];
 
-        return array_merge($include_key ? [$key] : [], $this->control['named'][$key]['aliases']);
+        return $include_key ? $aliases : array_values(array_diff($aliases, [$key]));
     }
 
     /**
@@ -209,7 +264,7 @@ class OptionsCollection extends BaseCollection
     {
         $key = $this->ensureValidKey($key);
 
-        return $this->control['named'][$key]['hash'];
+        return $this->control['named'][$key];
     }
 
     /**
@@ -221,8 +276,18 @@ class OptionsCollection extends BaseCollection
      */
     public function getType(string $key): OptionType
     {
-        $key = $this->ensureValidKey($key);
+        return $this->control['hashed'][$this->getHash($key)]['type'];
+    }
 
-        return $this->control['named'][$key]['type'];
+    /**
+     * Gets the option's validation.
+     *
+     * @param string $key
+     *
+     * @return callable|null
+     */
+    public function getValidation(string $key): ?callable
+    {
+        return $this->control['hashed'][$this->getHash($key)]['validation'];
     }
 }
