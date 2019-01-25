@@ -76,8 +76,7 @@ trait HandlesCommandInternals
     public function __get(string $name)
     {
         if ($this->isCallForOption($name)) {
-            $name = str_replace('_', '-', $name);
-            return $this->getOptions()->get($name);
+            return $this->getOptions()->get($this->methodToOptionName($name));
         }
 
         return $this->getArguments()->get($name);
@@ -108,8 +107,7 @@ trait HandlesCommandInternals
     public function __isset(string $name): bool
     {
         if ($this->isCallForOption($name)) {
-            $name = str_replace('_', '-', $name);
-            return $this->getOptions()->isset($name);
+            return $this->getOptions()->isset($this->methodToOptionName($name));
         }
 
         return $this->getArguments()->isset($name);
@@ -126,8 +124,7 @@ trait HandlesCommandInternals
     public function __call(string $name, array $arguments): self
     {
         if ($this->isCallForOption($name)) {
-            $name = str_replace('_', '-', $name);
-            $this->getOptions()->set($name, ...$arguments);
+            $this->getOptions()->set($this->methodToOptionName($name), ...$arguments);
             return $this;
         }
 
