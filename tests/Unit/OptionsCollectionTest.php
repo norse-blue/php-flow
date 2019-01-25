@@ -39,17 +39,18 @@ class OptionsCollectionTest extends TestCase
         ], $collection->getDefinition());
         $this->assertEquals([
             'hashed' => [
-                sha1((string)json_encode(['-f'])) => ['-f'],
-            ],
-            'named' => [
-                '-f' => [
-                    'aliases' => [],
+                sha1('-f') => [
+                    'aliases' => [
+                        '-f',
+                    ],
                     'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f'])),
                     'type' => OptionType::BOOL(),
                     'validation' => function ($value, $type) {
                     },
                 ],
+            ],
+            'named' => [
+                '-f' => sha1('-f'),
             ],
         ], $collection->getControl());
     }
@@ -66,25 +67,17 @@ class OptionsCollectionTest extends TestCase
         ], $collection->getDefinition());
         $this->assertEquals([
             'hashed' => [
-                sha1((string)json_encode(['-f', '-F'])) => ['-f', '-F'],
+                sha1('-f|-F') => [
+                    'aliases' => ['-f', '-F'],
+                    'glue' => ' ',
+                    'type' => OptionType::BOOL(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
             ],
             'named' => [
-                '-f' => [
-                    'aliases' => ['-F'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f', '-F'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '-F' => [
-                    'aliases' => ['-f'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f', '-F'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
+                '-f' => sha1('-f|-F'),
+                '-F' => sha1('-f|-F'),
             ],
         ], $collection->getControl());
     }
@@ -101,25 +94,17 @@ class OptionsCollectionTest extends TestCase
         ], $collection->getDefinition());
         $this->assertEquals([
             'hashed' => [
-                sha1((string)json_encode(['-f', '--flag'])) => ['-f', '--flag'],
+                sha1('-f|--flag') => [
+                    'aliases' => ['-f', '--flag'],
+                    'glue' => ' ',
+                    'type' => OptionType::BOOL(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
             ],
             'named' => [
-                '-f' => [
-                    'aliases' => ['--flag'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f', '--flag'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '--flag' => [
-                    'aliases' => ['-f'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f', '--flag'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
+                '-f' => sha1('-f|--flag'),
+                '--flag' => sha1('-f|--flag'),
             ],
         ], $collection->getControl());
     }
@@ -144,69 +129,50 @@ class OptionsCollectionTest extends TestCase
         ], $collection->getDefinition());
         $this->assertEquals([
             'hashed' => [
-                sha1((string)json_encode(['-f'])) => ['-f'],
-                sha1((string)json_encode(['--flag'])) => ['--flag'],
-                sha1((string)json_encode(['-d', '--dual-flag'])) => ['-d', '--dual-flag'],
-                sha1((string)json_encode(['-i'])) => ['-i'],
-                sha1((string)json_encode(['-c', '--config'])) => ['-c', '--config'],
+                sha1('-f') => [
+                    'aliases' => ['-f'],
+                    'glue' => ' ',
+                    'type' => OptionType::BOOL(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
+                sha1('--flag') => [
+                    'aliases' => ['--flag'],
+                    'glue' => ' ',
+                    'type' => OptionType::BOOL(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
+                sha1('-d|--dual-flag') => [
+                    'aliases' => ['-d', '--dual-flag'],
+                    'glue' => ' ',
+                    'type' => OptionType::BOOL(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
+                sha1('-i') => [
+                    'aliases' => ['-i'],
+                    'glue' => ' ',
+                    'type' => OptionType::STRING(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
+                sha1('-c|--config') => [
+                    'aliases' => ['-c', '--config'],
+                    'glue' => ' ',
+                    'type' => OptionType::STRING(),
+                    'validation' => function ($value, $type) {
+                    },
+                ],
             ],
             'named' => [
-                '-f' => [
-                    'aliases' => [],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-f'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '--flag' => [
-                    'aliases' => [],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['--flag'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '-d' => [
-                    'aliases' => ['--dual-flag'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-d', '--dual-flag'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '--dual-flag' => [
-                    'aliases' => ['-d'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-d', '--dual-flag'])),
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '-i' => [
-                    'aliases' => [],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-i'])),
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '-c' => [
-                    'aliases' => ['--config'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-c', '--config'])),
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                '--config' => [
-                    'aliases' => ['-c'],
-                    'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-c', '--config'])),
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
+                '-f' => sha1('-f'),
+                '--flag' => sha1('--flag'),
+                '-d' => sha1('-d|--dual-flag'),
+                '--dual-flag' => sha1('-d|--dual-flag'),
+                '-i' => sha1('-i'),
+                '-c' => sha1('-c|--config'),
+                '--config' => sha1('-c|--config'),
             ],
         ], $collection->getControl());
     }
@@ -231,17 +197,16 @@ class OptionsCollectionTest extends TestCase
         ], $collection->getDefinition());
         $this->assertEquals([
             'hashed' => [
-                sha1((string)json_encode(['-i'])) => ['-i'],
-            ],
-            'named' => [
-                '-i' => [
-                    'aliases' => [],
+                sha1('-i') => [
+                    'aliases' => ['-i'],
                     'glue' => ' ',
-                    'hash' => sha1((string)json_encode(['-i'])),
                     'type' => OptionType::STRING(),
                     'validation' => function ($value, $type) {
                     },
                 ],
+            ],
+            'named' => [
+                '-i' => sha1('-i'),
             ],
         ], $collection->getControl());
     }
@@ -270,8 +235,11 @@ class OptionsCollectionTest extends TestCase
                 '--option' => 'unsupported_type',
             ]);
         } catch (\Exception $e) {
-            $this->assertInstanceOf(UnsupportedOptionTypeException::class, $e);
-            $this->assertEquals('The type for the option \'--option\' is not supported.', $e->getMessage());
+            $this->assertInstanceOf(\UnexpectedValueException::class, $e);
+            $this->assertEquals(sprintf(
+                'Value \'unsupported_type\' is not part of the enum %s',
+                OptionType::class
+            ), $e->getMessage());
             return;
         }
 
@@ -286,12 +254,18 @@ class OptionsCollectionTest extends TestCase
             '--string-option' => OptionType::STRING,
         ]);
 
-        $compilation = $collection->getControl();
-
-        $this->assertTrue($compilation['named']['--bool-option']['validation'](false, OptionType::BOOL));
-        $this->assertFalse($compilation['named']['--bool-option']['validation']('true', OptionType::BOOL));
-        $this->assertTrue($compilation['named']['--string-option']['validation']('string', OptionType::STRING));
-        $this->assertFalse($compilation['named']['--string-option']['validation'](true, OptionType::STRING));
+        $this->assertTrue(is_callable($collection->getValidation('--bool-option'))
+            ? $collection->getValidation('--bool-option')(false, OptionType::BOOL)
+            : false);
+        $this->assertFalse(is_callable($collection->getValidation('--bool-option'))
+            ? $collection->getValidation('--bool-option')('true', OptionType::BOOL)
+            : true);
+        $this->assertTrue(is_callable($collection->getValidation('--string-option'))
+            ? $collection->getValidation('--string-option')('string', OptionType::STRING)
+            : false);
+        $this->assertFalse(is_callable($collection->getValidation('--string-option'))
+            ? $collection->getValidation('--string-option')(true, OptionType::STRING)
+            : true);
     }
 
     /** @test */
@@ -304,9 +278,9 @@ class OptionsCollectionTest extends TestCase
         $collection->set('--bool-option', true);
 
         $this->assertEquals([
-            sha1((string)json_encode(['--bool-option'])) => [
+            sha1('--bool-option') => [
                 'key' => '--bool-option',
-                'value' => true
+                'value' => true,
             ],
         ], $collection->getItems());
     }
@@ -400,7 +374,7 @@ class OptionsCollectionTest extends TestCase
             '-b|--bool-option' => OptionType::BOOL,
         ]);
 
-        $this->assertEquals(sha1((string)json_encode(['-b', '--bool-option'])), $collection->getHash('--bool-option'));
+        $this->assertEquals(sha1('-b|--bool-option'), $collection->getHash('--bool-option'));
     }
 
     /** @test */
