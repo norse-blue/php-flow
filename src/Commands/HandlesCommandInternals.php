@@ -124,11 +124,11 @@ trait HandlesCommandInternals
     public function __call(string $name, array $arguments): self
     {
         if ($this->isCallForOption($name)) {
-            $this->getOptions()->set($this->methodToOptionName($name), ...$arguments);
+            $this->getOptions()->set($this->methodToOptionName($name), $arguments[0]);
             return $this;
         }
 
-        $this->getArguments()->set($name, ...$arguments);
+        $this->getArguments()->set($name, $arguments[0]);
 
         return $this;
     }
