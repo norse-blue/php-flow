@@ -81,12 +81,30 @@ class ArgumentsCollection extends BaseCollection
             ));
         }
 
-        $spec = [
+        return [
             'type' => new ArgumentType($argument['type']),
-            'validation' => $argument['validation'],
+            'validation' => $this->ensureValidationClosure($argument['validation']),
         ];
+    }
 
-        return $spec;
+    /**
+     * Ensures that the validation is a closure or null.
+     *
+     * @param \Closure|callable|null $validation
+     *
+     * @return \Closure|null
+     */
+    protected function ensureValidationClosure($validation): ?callable
+    {
+        if ($validation instanceof \Closure) {
+            return $validation;
+        }
+
+        if (is_callable($validation)) {
+            return \Closure::fromCallable($validation);
+        }
+
+        return null;
     }
 
     /**
