@@ -44,8 +44,8 @@ class ArgumentsCollection extends BaseCollection
 
             $compiled['indexed'][] = $key;
             $compiled['named'][$key] = \array_merge([
-                    'index' => count($compiled['indexed']) - 1,
-                ], $this->compileSpec($argument));
+                'index' => count($compiled['indexed']) - 1,
+            ], $this->compileSpec($argument));
         }
 
         return $compiled;
@@ -66,7 +66,11 @@ class ArgumentsCollection extends BaseCollection
                 'validation' => function ($value, $type): bool {
                     $callback = sprintf('is_%s', $type);
                     if (!is_callable($callback)) {
-                        throw new \RuntimeException(sprintf('Invalid callback \'%s\'.', $callback)); // @codeCoverageIgnore
+                        // @codeCoverageIgnoreStart
+                        throw new \RuntimeException(
+                            sprintf('Invalid callback \'%s\'.', $callback)
+                        );
+                        // @codeCoverageIgnoreEnd
                     }
 
                     return $callback($value);
