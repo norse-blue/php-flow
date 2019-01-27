@@ -20,10 +20,6 @@ class ArgumentsCollectionTest extends TestCase
         $collection = ArgumentsCollection::create([]);
 
         $this->assertEquals([], $collection->getDefinition());
-        $this->assertEquals([
-            'indexed' => [],
-            'named' => [],
-        ], $collection->getControl());
     }
 
     /** @test */
@@ -36,19 +32,22 @@ class ArgumentsCollectionTest extends TestCase
         $this->assertEquals([
             'path' => ArgumentType::STRING(),
         ], $collection->getDefinition());
-        $this->assertEquals([
-            'indexed' => [
-                0 => 'path',
-            ],
-            'named' => [
-                'path' => [
-                    'index' => 0,
-                    'type' => ArgumentType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-        ], $collection->getControl());
+    }
+
+    /** @test */
+    public function invalidItemsDefinitionThrowsException(): void
+    {
+        try {
+            ArgumentsCollection::create([
+                'path' => new \stdClass(),
+            ]);
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(\UnexpectedValueException::class, $e);
+            $this->assertEquals('The argument spec must be a string or an array, \'object\' given.', $e->getMessage());
+            return;
+        }
+
+        $this->fail('The Exception was not thrown.');
     }
 
     /** @test */
@@ -61,36 +60,14 @@ class ArgumentsCollectionTest extends TestCase
         ]);
 
         $this->assertEquals([
-            'indexed' => [
-                0 => 'path',
-                1 => 'user',
-                2 => 'server',
-            ],
-            'named' => [
-                'path' => [
-                    'index' => 0,
-                    'type' => ArgumentType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                'user' => [
-                    'index' => 1,
-                    'type' => ArgumentType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                'server' => [
-                    'index' => 2,
-                    'type' => ArgumentType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-        ], $collection->getControl());
+            'path' => ArgumentType::STRING(),
+            'user' => ArgumentType::STRING(),
+            'server' => ArgumentType::STRING(),
+        ], $collection->getDefinition());
     }
 
     /** @test */
-    public function canCompileItemsDefinitionWithCustomValidation(): void
+    public function canCompileItemsDefinitionWithCustomClosureValidation(): void
     {
         $collection = ArgumentsCollection::create([
             'path' => [
@@ -102,18 +79,50 @@ class ArgumentsCollectionTest extends TestCase
         ]);
 
         $this->assertEquals([
-            'indexed' => [
-                0 => 'path',
+            'path' => [
+                'type' => ArgumentType::STRING(),
+                'validation' => function ($value, $type) {
+                },
             ],
-            'named' => [
-                'path' => [
-                    'index' => 0,
-                    'type' => ArgumentType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
+        ], $collection->getDefinition());
+    }
+
+    /** @test */
+    public function canCompileItemsDefinitionWithCustomCallableValidation(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'path' => [
+                'type' => ArgumentType::STRING,
+                'validation' => 'is_string',
             ],
-        ], $collection->getControl());
+        ]);
+
+        $this->assertEquals([
+            'path' => [
+                'type' => ArgumentType::STRING(),
+                'validation' => 'is_string',
+            ],
+        ], $collection->getDefinition());
+        $this->assertEquals(\Closure::fromCallable('is_string'), $collection->getValidation('path'));
+    }
+
+    /** @test */
+    public function canCompileItemsDefinitionWithInvalidValidation(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'path' => [
+                'type' => ArgumentType::STRING,
+                'validation' => 'invalid_validation',
+            ],
+        ]);
+
+        $this->assertEquals([
+            'path' => [
+                'type' => ArgumentType::STRING(),
+                'validation' => 'invalid_validation',
+            ],
+        ], $collection->getDefinition());
+        $this->assertNull($collection->getValidation('path'));
     }
 
     /** @test */
@@ -161,10 +170,33 @@ class ArgumentsCollectionTest extends TestCase
             'string-argument' => ArgumentType::STRING,
         ]);
 
-        $control = $collection->getControl();
+        $validation = $collection->getValidation('string-argument');
 
-        $this->assertTrue($control['named']['string-argument']['validation']('string', ArgumentType::STRING));
-        $this->assertFalse($control['named']['string-argument']['validation'](true, ArgumentType::STRING));
+        $this->assertInstanceOf(\Closure::class, $validation);
+        $this->assertTrue($validation('string', ArgumentType::STRING));
+        $this->assertFalse($validation(true, ArgumentType::STRING));
+    }
+
+    /** @test */
+    public function issetReturnsFalseWhenItemIsNotSet(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'command' => ArgumentType::STRING,
+        ]);
+
+        $this->assertFalse($collection->isset('command'));
+    }
+
+    /** @test */
+    public function issetReturnsTrueWhenItemIsSet(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'command' => ArgumentType::STRING,
+        ], [
+            'command' => 'argument-value',
+        ]);
+
+        $this->assertTrue($collection->isset('command'));
     }
 
     /** @test */
@@ -176,9 +208,25 @@ class ArgumentsCollectionTest extends TestCase
 
         $collection->set('command', 'argument-value');
 
+        $this->assertTrue($collection->isset('command'));
         $this->assertEquals([
             'command' => 'argument-value',
         ], $collection->getItems());
+    }
+
+    /** @test */
+    public function unsetCanUnsetArgumentValue(): void
+    {
+        $collection = ArgumentsCollection::create([
+            'command' => ArgumentType::STRING,
+        ], [
+            'command' => 'argument-value',
+        ]);
+
+        $collection->unset('command');
+
+        $this->assertFalse($collection->isset('command'));
+        $this->assertNull($collection->get('command'));
     }
 
     /** @test */
@@ -190,6 +238,7 @@ class ArgumentsCollectionTest extends TestCase
             'command' => 'argument-value',
         ]);
 
+        $this->assertTrue($collection->isset('command'));
         $this->assertEquals('argument-value', $collection->get('command'));
     }
 
@@ -232,38 +281,8 @@ class ArgumentsCollectionTest extends TestCase
             'command' => ArgumentType::STRING,
         ]);
 
-        $this->assertEquals([], $collection->getItems());
+        $this->assertFalse($collection->isset('command'));
         $this->assertEquals('default-value', $collection->get('command', 'default-value'));
-    }
-
-    /** @test */
-    public function issetReturnsArgumentStateCorrectly(): void
-    {
-        $collection = ArgumentsCollection::create([
-            'command' => ArgumentType::STRING,
-        ]);
-
-        $this->assertFalse($collection->isset('command'));
-
-        $collection->set('command', 'argument-value');
-
-        $this->assertTrue($collection->isset('command'));
-    }
-
-    /** @test */
-    public function unsetRemovesArgumentStateCorrectly(): void
-    {
-        $collection = ArgumentsCollection::create([
-            'command' => ArgumentType::STRING,
-        ], [
-            'command' => 'argument-value',
-        ]);
-
-        $this->assertTrue($collection->isset('command'));
-
-        $collection->unset('command');
-
-        $this->assertFalse($collection->isset('command'));
     }
 
     /** @test */

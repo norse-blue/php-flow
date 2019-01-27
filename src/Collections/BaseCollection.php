@@ -130,14 +130,6 @@ abstract class BaseCollection implements CompilableCollection
     /**
      * {@inheritdoc}
      */
-    public function getControl(): array
-    {
-        return $this->control;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function getItems(): array
     {
         return $this->items;

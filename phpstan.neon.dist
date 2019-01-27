@@ -5,3 +5,7 @@ parameters:
           path: %currentWorkingDirectory%/tests/Unit/ArgumentsCollectionTest.php
         - message: '~Parameter #1 $key of method [a-zA-Z0-9\\_]+::validateIdentifier() expects int|string, stdClass given.~'
           path: %currentWorkingDirectory%/tests/Unit/OptionsCollectionTest.php
+        - message: '~Trying to invoke (callable(): mixed)|null but it might not be a callable.~'
+          path: %currentWorkingDirectory%/tests/Unit/ArgumentsCollectionTest.php
+        - message: '~Trying to invoke (callable(): mixed)|null but it might not be a callable.~'
+          path: %currentWorkingDirectory%/tests/Unit/OptionsCollectionTest.php

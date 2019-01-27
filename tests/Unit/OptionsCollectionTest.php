@@ -5,7 +5,6 @@ namespace NorseBlue\Flow\Tests\Unit;
 use NorseBlue\Flow\Commands\Options\OptionsCollection;
 use NorseBlue\Flow\Commands\Options\OptionType;
 use NorseBlue\Flow\Exceptions\InvalidOptionIdentifierException;
-use NorseBlue\Flow\Exceptions\UnsupportedOptionTypeException;
 use NorseBlue\Flow\Tests\TestCase;
 
 /**
@@ -21,10 +20,7 @@ class OptionsCollectionTest extends TestCase
         $collection = OptionsCollection::create([]);
 
         $this->assertEquals([], $collection->getDefinition());
-        $this->assertEquals([
-            'hashed' => [],
-            'named' => [],
-        ], $collection->getControl());
+        $this->assertEquals([], $collection->getDefinition());
     }
 
     /** @test */
@@ -37,22 +33,6 @@ class OptionsCollectionTest extends TestCase
         $this->assertEquals([
             '-f' => OptionType::BOOL(),
         ], $collection->getDefinition());
-        $this->assertEquals([
-            'hashed' => [
-                sha1('-f') => [
-                    'aliases' => [
-                        '-f',
-                    ],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-            'named' => [
-                '-f' => sha1('-f'),
-            ],
-        ], $collection->getControl());
     }
 
     /** @test */
@@ -65,21 +45,6 @@ class OptionsCollectionTest extends TestCase
         $this->assertEquals([
             '-f|-F' => OptionType::BOOL(),
         ], $collection->getDefinition());
-        $this->assertEquals([
-            'hashed' => [
-                sha1('-f|-F') => [
-                    'aliases' => ['-f', '-F'],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-            'named' => [
-                '-f' => sha1('-f|-F'),
-                '-F' => sha1('-f|-F'),
-            ],
-        ], $collection->getControl());
     }
 
     /** @test */
@@ -92,21 +57,6 @@ class OptionsCollectionTest extends TestCase
         $this->assertEquals([
             '-f|--flag' => OptionType::BOOL(),
         ], $collection->getDefinition());
-        $this->assertEquals([
-            'hashed' => [
-                sha1('-f|--flag') => [
-                    'aliases' => ['-f', '--flag'],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-            'named' => [
-                '-f' => sha1('-f|--flag'),
-                '--flag' => sha1('-f|--flag'),
-            ],
-        ], $collection->getControl());
     }
 
     /** @test */
@@ -127,54 +77,22 @@ class OptionsCollectionTest extends TestCase
             '-i' => OptionType::STRING(),
             '-c|--config' => OptionType::STRING(),
         ], $collection->getDefinition());
-        $this->assertEquals([
-            'hashed' => [
-                sha1('-f') => [
-                    'aliases' => ['-f'],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                sha1('--flag') => [
-                    'aliases' => ['--flag'],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                sha1('-d|--dual-flag') => [
-                    'aliases' => ['-d', '--dual-flag'],
-                    'glue' => ' ',
-                    'type' => OptionType::BOOL(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                sha1('-i') => [
-                    'aliases' => ['-i'],
-                    'glue' => ' ',
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-                sha1('-c|--config') => [
-                    'aliases' => ['-c', '--config'],
-                    'glue' => ' ',
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
-            ],
-            'named' => [
-                '-f' => sha1('-f'),
-                '--flag' => sha1('--flag'),
-                '-d' => sha1('-d|--dual-flag'),
-                '--dual-flag' => sha1('-d|--dual-flag'),
-                '-i' => sha1('-i'),
-                '-c' => sha1('-c|--config'),
-                '--config' => sha1('-c|--config'),
-            ],
-        ], $collection->getControl());
+    }
+
+    /** @test */
+    public function invalidItemsDefinitionThrowsException(): void
+    {
+        try {
+            OptionsCollection::create([
+                '--bool-option' => new \stdClass(),
+            ]);
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(\UnexpectedValueException::class, $e);
+            $this->assertEquals('The option spec must be a string or an array, \'object\' given.', $e->getMessage());
+            return;
+        }
+
+        $this->fail('The Exception was not thrown.');
     }
 
     /** @test */
@@ -184,6 +102,7 @@ class OptionsCollectionTest extends TestCase
             '-i' => [
                 'type' => OptionType::STRING,
                 'validation' => function ($value, $type) {
+                    return $type === 'string' && $value === 'custom_validation';
                 },
             ],
         ]);
@@ -195,20 +114,44 @@ class OptionsCollectionTest extends TestCase
                 },
             ],
         ], $collection->getDefinition());
+    }
+
+    /** @test */
+    public function canCompileItemsDefinitionWithCustomCallableValidation(): void
+    {
+        $collection = OptionsCollection::create([
+            '--string-option' => [
+                'type' => OptionType::STRING,
+                'validation' => 'is_string',
+            ],
+        ]);
+
         $this->assertEquals([
-            'hashed' => [
-                sha1('-i') => [
-                    'aliases' => ['-i'],
-                    'glue' => ' ',
-                    'type' => OptionType::STRING(),
-                    'validation' => function ($value, $type) {
-                    },
-                ],
+            '--string-option' => [
+                'type' => OptionType::STRING(),
+                'validation' => 'is_string',
             ],
-            'named' => [
-                '-i' => sha1('-i'),
+        ], $collection->getDefinition());
+        $this->assertEquals(\Closure::fromCallable('is_string'), $collection->getValidation('--string-option'));
+    }
+
+    /** @test */
+    public function canCompileItemsDefinitionWithInvalidValidation(): void
+    {
+        $collection = OptionsCollection::create([
+            '--string-option' => [
+                'type' => OptionType::STRING,
+                'validation' => 'invalid_validation',
             ],
-        ], $collection->getControl());
+        ]);
+
+        $this->assertEquals([
+            '--string-option' => [
+                'type' => OptionType::STRING(),
+                'validation' => 'invalid_validation',
+            ],
+        ], $collection->getDefinition());
+        $this->assertNull($collection->getValidation('--string-option'));
     }
 
     /** @test */
@@ -254,18 +197,41 @@ class OptionsCollectionTest extends TestCase
             '--string-option' => OptionType::STRING,
         ]);
 
-        $this->assertTrue(is_callable($collection->getValidation('--bool-option'))
-            ? $collection->getValidation('--bool-option')(false, OptionType::BOOL)
-            : false);
-        $this->assertFalse(is_callable($collection->getValidation('--bool-option'))
-            ? $collection->getValidation('--bool-option')('true', OptionType::BOOL)
-            : true);
-        $this->assertTrue(is_callable($collection->getValidation('--string-option'))
-            ? $collection->getValidation('--string-option')('string', OptionType::STRING)
-            : false);
-        $this->assertFalse(is_callable($collection->getValidation('--string-option'))
-            ? $collection->getValidation('--string-option')(true, OptionType::STRING)
-            : true);
+        $bool_validation = $collection->getValidation('--bool-option');
+        $string_validation = $collection->getValidation('--string-option');
+
+        $this->assertInstanceOf(\Closure::class, $bool_validation);
+        $this->assertTrue($bool_validation(false, OptionType::BOOL));
+        $this->assertFalse($bool_validation('true', OptionType::BOOL));
+        $this->assertInstanceOf(\Closure::class, $string_validation);
+        $this->assertTrue($string_validation('string', OptionType::STRING));
+        $this->assertFalse($string_validation(true, OptionType::STRING));
+    }
+
+    /** @test */
+    public function issetReturnsFalseWhenItemIsNotSet(): void
+    {
+        $collection = OptionsCollection::create([
+            '--bool-option' => OptionType::BOOL,
+            '--string-option' => OptionType::STRING,
+        ], [
+            '--string-option' => 'option-value',
+        ]);
+
+        $this->assertFalse($collection->isset('--bool-option'));
+    }
+
+    /** @test */
+    public function issetReturnsTrueWhenItemIsSet(): void
+    {
+        $collection = OptionsCollection::create([
+            '--bool-option' => OptionType::BOOL,
+            '--string-option' => OptionType::STRING,
+        ], [
+            '--string-option' => 'option-value',
+        ]);
+
+        $this->assertTrue($collection->isset('--string-option'));
     }
 
     /** @test */
@@ -277,12 +243,25 @@ class OptionsCollectionTest extends TestCase
 
         $collection->set('--bool-option', true);
 
+        $this->assertTrue($collection->isset('--bool-option'));
         $this->assertEquals([
-            sha1('--bool-option') => [
-                'key' => '--bool-option',
-                'value' => true,
-            ],
+            '--bool-option' => true,
         ], $collection->getItems());
+    }
+
+    /** @test */
+    public function unsetCanUnsetOptionValue(): void
+    {
+        $collection = OptionsCollection::create([
+            '--bool-option' => OptionType::STRING,
+        ], [
+            '--bool-option' => true,
+        ]);
+
+        $collection->unset('--bool-option');
+
+        $this->assertFalse($collection->isset('--bool-option'));
+        $this->assertNull($collection->get('--bool-option'));
     }
 
     /** @test */
@@ -294,6 +273,7 @@ class OptionsCollectionTest extends TestCase
             '--bool-option' => true,
         ]);
 
+        $this->assertTrue($collection->isset('--bool-option'));
         $this->assertTrue($collection->get('--bool-option'));
     }
 
@@ -301,45 +281,15 @@ class OptionsCollectionTest extends TestCase
     public function getReturnsDefaultValueWhenOptionNotSet(): void
     {
         $collection = OptionsCollection::create([
-            '--bool-option' => OptionType::BOOL,
+            '--string-option' => OptionType::STRING,
         ]);
 
         $this->assertEquals([], $collection->getItems());
-        $this->assertEquals('default-value', $collection->get('--bool-option', 'default-value'));
+        $this->assertEquals('default-value', $collection->get('--string-option', 'default-value'));
     }
 
     /** @test */
-    public function issetReturnsOptionStateCorrectly(): void
-    {
-        $collection = OptionsCollection::create([
-            '--bool-option' => OptionType::BOOL,
-        ]);
-
-        $this->assertFalse($collection->isset('--bool-option'));
-
-        $collection->set('--bool-option', false);
-
-        $this->assertTrue($collection->isset('--bool-option'));
-    }
-
-    /** @test */
-    public function unsetRemovesArgumentStateCorrectly(): void
-    {
-        $collection = OptionsCollection::create([
-            '--bool-option' => OptionType::STRING,
-        ], [
-            '--bool-option' => false,
-        ]);
-
-        $this->assertTrue($collection->isset('--bool-option'));
-
-        $collection->unset('--bool-option');
-
-        $this->assertFalse($collection->isset('--bool-option'));
-    }
-
-    /** @test */
-    public function getAliasesReturnsCompiledOptionAliases(): void
+    public function getAliasesReturnsOptionAliasesCorrectly(): void
     {
         $collection = OptionsCollection::create([
             '--bool-option|--bool-alias' => OptionType::BOOL,
