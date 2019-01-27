@@ -80,7 +80,7 @@ class ArgumentsCollection extends BaseCollection
 
         if (!\is_array($argument)) {
             throw new \UnexpectedValueException(sprintf(
-                'The argument spec must be a string or an array, %s given',
+                'The argument spec must be a string or an array, \'%s\' given.',
                 gettype($argument)
             ));
         }

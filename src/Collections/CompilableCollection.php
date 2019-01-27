@@ -69,13 +69,6 @@ interface CompilableCollection
     public function getDefinition(): array;
 
     /**
-     * Gets the collection control structure.
-     *
-     * @return array
-     */
-    public function getControl(): array;
-
-    /**
      * Get the collection's raw internal items array.
      *
      * @return array

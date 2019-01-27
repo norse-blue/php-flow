@@ -84,7 +84,7 @@ class OptionsCollection extends BaseCollection
 
         if (!\is_array($option)) {
             throw new \UnexpectedValueException(sprintf(
-                'The option spec must be a string or an array, %s given',
+                'The option spec must be a string or an array, \'%s\' given.',
                 gettype($option)
             ));
         }
@@ -236,6 +236,19 @@ class OptionsCollection extends BaseCollection
         }
 
         return (bool)preg_match('/^\-{1,2}[a-zA-Z](?:[a-zA-Z0-9_\-]|\|\-{1,2}[a-zA-Z])*(?<!\-)$/', (string)$key);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getItems(): array
+    {
+        $items = [];
+        foreach ($this->items as $hash => $item) {
+            $items[$item['key']] = $item['value'];
+        }
+
+        return $items;
     }
 
     /**
